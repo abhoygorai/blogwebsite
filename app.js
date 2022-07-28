@@ -4,79 +4,74 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const _ = require("lodash");
+const mongoose = require("mongoose");
 
+mongoose.connect("mongodb+srv://admin-abhoy:adminpass@cluster0.e5ghf.mongodb.net/blogWebsite");
 
-const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
-const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
-const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
+const blogModel = new mongoose.model("blog", {
+  titleContent: String,
+  textContent: String
+});
+const additionalModel = new mongoose.model("extra", {
+  titleContent: String,
+  textContent: String
+});
 
-const contentList = [];
 
 const app = express();
-
 app.set('view engine', 'ejs');
-
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.get("/", function(req, res){
-
-  res.render("home", {
-    para: homeStartingContent,
-    posts: contentList,
-    linkForRead: "/posts/"+contentList
-  });
+app.get("/", function (req, res) {
+  let homeText = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
   
-});
-
-
-app.get("/about", function(req, res){
-  res.render("about", {para: aboutContent});
-});
-
-app.get("/contact", function(req, res){
-  res.render("contact", {para: contactContent});
-});
-
-app.get("/compose", function(req, res){
-  res.render("compose");
-});
-
-app.post("/compose", function(req, res){
-  const post = {
-    postTitle: req.body.postTitle,
-    postContent: req.body.postBody,
-  }  
-  contentList.push(post);
-  res.redirect("/");
-});
-
-
-app.get("/posts/:parameters", function(req, res){
-
-  for(var i = 0; i<contentList.length; i++){
-    if(_.lowerCase(contentList[i].postTitle) == _.lowerCase(req.params.parameters)){
-      console.log("match found");
-      res.render("post", {
-        title: contentList[i].postTitle,
-        bodyContent: contentList[i].postContent
-      })
+  blogModel.find({}, function (err, searchResult) {
+    if (err) {
+      console.log(err);
     }
-    else
-      console.log("not found");
-  }
+    else {
+      res.render("home", {
+        para: homeText,
+        posts: searchResult
+      });
+    }
+  });
+
   
+  // res.send("test");
+
 });
 
 
+app.get("/about", function (req, res) {
+  additionalModel.findOne({ titleContent: "about-text-content" }, function (err, result) {
+    if(err){
+      console.log(err);
+    }
+    else{
+      res.render("about", { para: result.textContent });
+    }
+  });
+});
 
+app.get("/contact", function (req, res) {
+  additionalModel.findOne({ titleContent: "contact-text-content" }, function (err, result) {
+    if(err){
+      console.log(err);
+    }
+    else{
+      res.render("contact", { para: result.textContent });
+    }
+  });
+});
 
+let port = process.env.PORT;
 
+if(port == NULL){
+  port = 4000;
+}
 
-
-
-
-
-app.listen(4000, function() {
-  console.log("Server started on port 4000");
+app.listen(port, function () {
+  console.log("Server started");
 });

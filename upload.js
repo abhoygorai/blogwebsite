@@ -6,10 +6,16 @@ const mongoose = require("mongoose");
 
 mongoose.connect("mongodb+srv://admin-abhoy:adminpass@cluster0.e5ghf.mongodb.net/blogWebsite");
 const dataSchema = mongoose.Schema({
+    blogId: Number,
     titleContent: String,
     textContent: String
 });
+
 const blogModel = new mongoose.model("blog", dataSchema);
+const idModel = new mongoose.model("blogid", {
+    name: String,
+    idNo: Number
+});
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -21,13 +27,25 @@ app.get("/", function(req, res){
 });
 
 app.post("/", function(req, res){
-    const newPost = new blogModel({
-        titleContent: req.body.postTitle,
-        textContent: req.body.postBody
+    idModel.find({name: "main"}, function (err, obj) {
+        const next = obj[0].idNo + 1;
+        console.log(next);
+        const newPost = new blogModel({
+            blogId: next,
+            titleContent: req.body.postTitle,
+            textContent: req.body.postBody
+        });
+        newPost.save();
+        idModel.findOneAndUpdate({name:"main"}, {$set:{idNo:next}}, {new: true}, (err, doc) => {
+            if (err) {
+                console.log("Something wrong when updating data!");
+                res.render("message", {messageText: "Error occured"});
+            }
+            else{
+                res.render("message", {messageText: "Posted succesfully"});
+            }
+        });
     });
-    newPost.save();
-    console.log("posted succesfully");
-    res.render("message", {messageText: "Posted succesfully"});
 });
 
 app.post("/message", function(req,res){

@@ -8,8 +8,8 @@
         <%= posts[i].titleContent  %> 
     </h1>
     <p>
-        <%= posts[i].textContent %> 
-        
+        <%= posts[i].textContent.substring(0, 100)+". . ." %>
+        <a href="/post/blog-<%= posts[i].blogId %> ">read more</a>
     </p>
 <% } %>
 

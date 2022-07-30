@@ -9,10 +9,12 @@ const mongoose = require("mongoose");
 mongoose.connect("mongodb+srv://admin-abhoy:adminpass@cluster0.e5ghf.mongodb.net/blogWebsite");
 
 const blogModel = new mongoose.model("blog", {
+  blogId: Number,
   titleContent: String,
   textContent: String
 });
 const additionalModel = new mongoose.model("extra", {
+  blogId: Number,
   titleContent: String,
   textContent: String
 });
@@ -37,10 +39,6 @@ app.get("/", function (req, res) {
       });
     }
   });
-
-  
-  // res.send("test");
-
 });
 
 
@@ -63,6 +61,15 @@ app.get("/contact", function (req, res) {
     else{
       res.render("contact", { para: result.textContent });
     }
+  });
+});
+
+app.get("/post/blog-:parameter", function(req, res){
+  blogModel.find({blogId: req.params.parameter}, function (err, searchResult) {
+    res.render("post",{
+      title: searchResult[0].titleContent,
+      bodyContent: searchResult[0].textContent
+    })
   });
 });
 

@@ -9,6 +9,7 @@ const dataSchema = mongoose.Schema({
     textContent: String
 });
 
+
 const idModel = new mongoose.model("blogid", {
     name: String,
     idNo: Number
